@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Recruitment Copilot — Recruiter Portal. Manage job postings, review candidate resumes, track analytics, and make data-driven hiring decisions.">
+  <title>Recruiter Portal — AI Recruitment Copilot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --clr-bg: #0a0b14;
+      --clr-surface: #111827;
+      --clr-surface2: #1a2035;
+      --clr-border: rgba(255,255,255,0.07);
+      --clr-primary: #6366f1;
+      --clr-primary-glow: rgba(99,102,241,0.25);
+      --clr-secondary: #06b6d4;
+      --clr-accent: #a855f7;
+      --clr-green: #10b981;
+      --clr-yellow: #f59e0b;
+      --clr-red: #ef4444;
+      --clr-orange: #f97316;
+      --txt-primary: #f1f5f9;
+      --txt-secondary: #94a3b8;
+      --txt-muted: #64748b;
+      --radius: 14px;
+      --shadow: 0 4px 32px rgba(0,0,0,0.4);
+      --sidebar-w: 260px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--clr-bg); color:var(--txt-primary); min-height:100vh; overflow-x:hidden; }
+
+    /* ── Auth Screen ── */
+    #auth-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(ellipse at 70% 50%, rgba(168,85,247,0.15) 0%, transparent 60%),
+                  radial-gradient(ellipse at 20% 20%, rgba(99,102,241,0.12) 0%, transparent 60%), var(--clr-bg);
+      padding: 24px;
+    }
+    .auth-card {
+      background: var(--clr-surface); border: 1px solid var(--clr-border);
+      border-radius: 24px; padding: 44px; width: 100%; max-width: 480px;
+      box-shadow: var(--shadow); position: relative; overflow: hidden;
+    }
+    .auth-card::before { content:''; position:absolute; top:-1px; left:-1px; right:-1px; height:3px; background:linear-gradient(90deg,var(--clr-accent),var(--clr-primary),var(--clr-secondary)); border-radius:24px 24px 0 0; }
+    .auth-logo { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+    .auth-logo .logo-icon { width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,var(--clr-accent),var(--clr-primary)); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; color:white; box-shadow:0 0 20px rgba(168,85,247,0.3); }
+    .auth-logo .logo-text { font-size:18px; font-weight:700; }
+    .logo-badge { font-size:10px; font-weight:600; background:rgba(168,85,247,0.15); color:var(--clr-accent); padding:2px 8px; border-radius:99px; border:1px solid rgba(168,85,247,0.3); }
+    .auth-title { font-size:26px; font-weight:800; margin-bottom:6px; }
+    .auth-sub { color:var(--txt-secondary); font-size:14px; margin-bottom:24px; }
+    .tab-row { display:flex; gap:4px; background:rgba(255,255,255,0.04); border-radius:10px; padding:4px; margin-bottom:24px; border:1px solid var(--clr-border); }
+    .tab-btn { flex:1; padding:10px; border:none; background:transparent; color:var(--txt-secondary); font-family:'Inter',sans-serif; font-size:13px; font-weight:600; border-radius:8px; cursor:pointer; transition:all 0.2s; }
+    .tab-btn.active { background:linear-gradient(135deg,var(--clr-accent),var(--clr-primary)); color:white; box-shadow:0 2px 10px rgba(168,85,247,0.3); }
+    .form-group { margin-bottom:16px; }
+    .form-input, .form-select, .form-textarea { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--clr-border); border-radius:10px; padding:12px 16px; color:var(--txt-primary); font-family:'Inter',sans-serif; font-size:14px; outline:none; transition:border-color 0.2s, box-shadow 0.2s; }
+    .form-select option { background:#111827; color:#f1f5f9; padding:8px; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color:var(--clr-accent); box-shadow:0 0 0 3px rgba(168,85,247,0.25); }
+    .btn-primary { width:100%; padding:14px; background:linear-gradient(135deg,var(--clr-accent),var(--clr-primary)); color:white; border:none; border-radius:10px; font-family:'Inter',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:opacity 0.2s, transform 0.1s; box-shadow:0 4px 20px rgba(168,85,247,0.3); margin-top:8px; }
+    .btn-primary:hover { opacity:0.9; transform:translateY(-1px); }
+    .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+    .alert { padding:12px 16px; border-radius:10px; font-size:13px; margin-bottom:16px; display:none; }
+    .alert.show { display:block; }
+    .alert-error { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; }
+    .alert-success { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); color:#6ee7b7; }
+    .btn-google {
+      width:100%; padding:13px 16px; background:#fff; color:#3c4043;
+      border:1px solid #dadce0; border-radius:10px; font-family:'Inter',sans-serif;
+      font-size:14px; font-weight:600; cursor:pointer; display:flex;
+      align-items:center; justify-content:center; gap:10px;
+      transition:box-shadow 0.2s, background 0.2s; margin-top:4px;
+    }
+    .btn-google:hover { box-shadow:0 1px 6px rgba(0,0,0,0.3); background:#f8f8f8; }
+    .btn-google:disabled { opacity:0.6; cursor:not-allowed; }
+
+    /* ── App Layout ── */
+    #app-screen { display:none; min-height:100vh; }
+    .sidebar { position:fixed; left:0; top:0; bottom:0; width:var(--sidebar-w); background:var(--clr-surface); border-right:1px solid var(--clr-border); display:flex; flex-direction:column; padding:24px 16px; z-index:100; }
+    .sidebar-logo { display:flex; align-items:center; gap:10px; padding:0 8px; margin-bottom:28px; }
+    .sidebar-logo .logo-icon { width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,var(--clr-accent),var(--clr-primary)); display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:900; color:white; }
+    .sidebar-logo .logo-name { font-size:15px; font-weight:700; }
+    .sidebar-logo .logo-portal { font-size:10px; color:var(--clr-accent); font-weight:600; }
+    .nav-section-title { font-size:10px; font-weight:700; color:var(--txt-muted); letter-spacing:0.1em; text-transform:uppercase; padding:0 8px; margin-bottom:6px; margin-top:18px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:background 0.2s, color 0.2s; color:var(--txt-secondary); font-size:13px; font-weight:500; margin-bottom:2px; }
+    .nav-item:hover { background:rgba(255,255,255,0.05); color:var(--txt-primary); }
+    .nav-item.active { background:rgba(168,85,247,0.15); color:var(--clr-accent); font-weight:600; }
+    .nav-item .nav-icon { font-size:16px; width:20px; text-align:center; }
+    .sidebar-footer { margin-top:auto; padding-top:16px; border-top:1px solid var(--clr-border); }
+    .user-info { display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px; background:rgba(255,255,255,0.04); }
+    .user-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--clr-accent),var(--clr-primary)); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:white; }
+    .user-name { font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .user-role { font-size:11px; color:var(--clr-accent); }
+    .btn-logout { margin-top:8px; width:100%; padding:8px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#fca5a5; border-radius:8px; cursor:pointer; font-family:'Inter',sans-serif; font-size:12px; font-weight:600; transition:background 0.2s; }
+    .btn-logout:hover { background:rgba(239,68,68,0.2); }
+
+    .main-content { margin-left:var(--sidebar-w); padding:32px; min-height:100vh; }
+    .page { display:none; }
+    .page.active { display:block; }
+    .page-header { margin-bottom:28px; }
+    .page-header h1 { font-size:26px; font-weight:800; }
+    .page-header p { color:var(--txt-secondary); font-size:14px; margin-top:4px; }
+
+    /* ── Component Cards ── */
+    .stats-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-bottom:28px; }
+    .stat-card { background:var(--clr-surface); border:1px solid var(--clr-border); border-radius:var(--radius); padding:20px; position:relative; overflow:hidden; }
+    .stat-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+    .stat-card.purple::after { background:var(--clr-accent); }
+    .stat-card.blue::after { background:var(--clr-primary); }
+    .stat-card.cyan::after { background:var(--clr-secondary); }
+    .stat-card.green::after { background:var(--clr-green); }
+    .stat-card.yellow::after { background:var(--clr-yellow); }
+    .stat-value { font-size:30px; font-weight:800; }
+    .stat-label { font-size:12px; color:var(--txt-secondary); margin-top:4px; }
+
+    .card { background:var(--clr-surface); border:1px solid var(--clr-border); border-radius:var(--radius); padding:24px; margin-bottom:24px; }
+    .card-title { font-size:16px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
+
+    /* ── Application Table ── */
+    .table-container { background:var(--clr-surface); border:1px solid var(--clr-border); border-radius:var(--radius); overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    th { padding:14px 20px; text-align:left; font-size:11px; font-weight:700; color:var(--txt-muted); letter-spacing:0.05em; text-transform:uppercase; border-bottom:1px solid var(--clr-border); }
+    td { padding:16px 20px; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.04); }
+    tr:hover td { background:rgba(255,255,255,0.02); }
+
+    .status-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:99px; font-size:11px; font-weight:600; }
+    .status-under_review { background:rgba(245,158,11,0.15); color:var(--clr-yellow); }
+    .status-reviewed { background:rgba(6,182,212,0.15); color:var(--clr-secondary); }
+    .status-shortlisted { background:rgba(168,85,247,0.15); color:var(--clr-accent); }
+    .status-accepted { background:rgba(16,185,129,0.15); color:var(--clr-green); }
+    .status-rejected { background:rgba(239,68,68,0.15); color:var(--clr-red); }
+    .status-hold { background:rgba(249,115,22,0.15); color:var(--clr-orange); }
+
+    .action-btn { padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; border:none; cursor:pointer; margin-right:4px; }
+    .btn-review { background:rgba(6,182,212,0.2); color:var(--clr-secondary); }
+    .btn-shortlist { background:rgba(168,85,247,0.2); color:var(--clr-accent); }
+    .btn-accept { background:rgba(16,185,129,0.2); color:var(--clr-green); }
+    .btn-hold { background:rgba(249,115,22,0.2); color:var(--clr-orange); }
+    .btn-reject { background:rgba(239,68,68,0.2); color:var(--clr-red); }
+
+    /* ── Modal ── */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:var(--clr-surface); border:1px solid var(--clr-border); border-radius:24px; padding:32px; width:100%; max-width:650px; max-height:90vh; overflow-y:auto; box-shadow:var(--shadow); position:relative; }
+    .modal-close { position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.06); border:none; color:var(--txt-secondary); width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
+    .toast { position:fixed; bottom:24px; right:24px; padding:14px 20px; border-radius:12px; background:var(--clr-surface2); border:1px solid var(--clr-border); color:var(--txt-primary); font-size:13px; font-weight:600; box-shadow:var(--shadow); transform:translateY(100px); opacity:0; transition:all 0.3s; z-index:2000; }
+    .toast.show { transform:translateY(0); opacity:1; }
+  </style>
+</head>
+<body>
+
+  <!-- Auth Screen -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">R</div>
+        <div>
+          <div style="font-size:18px; font-weight:800;">AI Recruitment Copilot</div>
+          <div class="logo-badge">RECRUITER PORTAL</div>
+        </div>
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" id="btn-tab-login" onclick="switchAuthTab('login')">Recruiter Sign In</button>
+        <button class="tab-btn" id="btn-tab-register" onclick="switchAuthTab('register')">Create Recruiter Account</button>
+      </div>
+
+      <div id="auth-alert" class="alert"></div>
+
+      <!-- Login Form -->
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Username or Email</label>
+          <input type="text" id="login-username" class="form-input" placeholder="recruiter@company.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" id="login-btn" class="btn-primary">Sign In to Recruiter Dashboard</button>
+
+        <!-- Google Sign-In — separate from existing login, does not modify above -->
+        <div style="display:flex;align-items:center;gap:12px;margin:18px 0 4px;">
+          <div style="flex:1;height:1px;background:var(--clr-border);"></div>
+          <span style="font-size:12px;color:var(--txt-muted);font-weight:600;white-space:nowrap;">OR</span>
+          <div style="flex:1;height:1px;background:var(--clr-border);"></div>
+        </div>
+        <button type="button" id="google-login-btn" onclick="handleGoogleLogin()" class="btn-google">
+          <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" style="display:none;" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="reg-username" class="form-input" placeholder="recruiter_jane" required>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="reg-email" class="form-input" placeholder="jane@company.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="reg-password" class="form-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" id="reg-btn" class="btn-primary">Create Recruiter Account</button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- Main App Screen -->
+  <div id="app-screen">
+    
+    <!-- Recruiter Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">R</div>
+        <div>
+          <div class="logo-name">Recruitment Copilot</div>
+          <div class="logo-portal">RECRUITER PORTAL</div>
+        </div>
+      </div>
+
+      <div class="nav-section-title">Overview</div>
+      <div class="nav-item active" id="nav-dash" onclick="showPage('dash')"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" id="nav-jobs" onclick="showPage('jobs')"><span class="nav-icon">💼</span> Job Postings</div>
+
+      <div class="nav-section-title">Candidates & Pipeline</div>
+      <div class="nav-item" id="nav-candidates" onclick="showPage('candidates')"><span class="nav-icon">👥</span> All Candidates</div>
+      <div class="nav-item" id="nav-rankings" onclick="showPage('rankings')"><span class="nav-icon">🎯</span> AI Candidate Ranking</div>
+      <div class="nav-item" id="nav-shortlisted" onclick="showPage('shortlisted')"><span class="nav-icon">⭐</span> Shortlisted Candidates</div>
+
+      <div class="nav-section-title">Insights</div>
+      <div class="nav-item" id="nav-analytics" onclick="showPage('analytics')"><span class="nav-icon">📈</span> Analytics</div>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="rec-avatar">R</div>
+          <div>
+            <div class="user-name" id="rec-user-name">Recruiter User</div>
+            <div class="user-role">Recruiter</div>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Pages -->
+    <main class="main-content">
+
+      <!-- 1. DASHBOARD PAGE -->
+      <section id="page-dash" class="page active">
+        <div class="page-header">
+          <h1>Recruiter Dashboard Overview</h1>
+          <p>Monitor applications, manage candidate review pipeline, and post new open jobs.</p>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card purple">
+            <div class="stat-value" id="stat-total-apps">0</div>
+            <div class="stat-label">Total Applications Received</div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="stat-value" id="stat-review-apps">0</div>
+            <div class="stat-label">Under Review</div>
+          </div>
+          <div class="stat-card cyan">
+            <div class="stat-value" id="stat-shortlisted-apps">0</div>
+            <div class="stat-label">Shortlisted Candidates</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-value" id="stat-accepted-apps">0</div>
+            <div class="stat-label">Accepted Offers</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Job-wise Applications Breakdown</span>
+            <button onclick="openCreateJobModal()" class="btn-primary" style="width:auto; padding:8px 16px; font-size:12px;">+ Post New Job</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Job Position</th>
+                  <th>Department</th>
+                  <th>Total Applicants</th>
+                  <th>Avg Match Score</th>
+                  <th>Shortlisted</th>
+                  <th>Accepted</th>
+                </tr>
+              </thead>
+              <tbody id="job-stats-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Recent Applicant Activity</div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Candidate Name</th>
+                  <th>Position Applied</th>
+                  <th>Education & CGPA</th>
+                  <th>Skill Match</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recent-apps-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- 2. JOB POSTINGS PAGE -->
+      <section id="page-jobs" class="page">
+        <div class="page-header">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h1>Job Postings Management</h1>
+              <p>Create and edit active hiring postings.</p>
+            </div>
+            <button onclick="openCreateJobModal()" class="btn-primary" style="width:auto; padding:10px 20px;">+ Post New Job</button>
+          </div>
+        </div>
+
+        <div id="rec-jobs-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px;"></div>
+      </section>
+
+
+      <!-- 3. ALL CANDIDATES PAGE -->
+      <section id="page-candidates" class="page">
+        <div class="page-header">
+          <h1>Candidate Resume Review & Pipeline</h1>
+          <p>Review candidate extracted details, degree, university, CGPA, and update hiring decision status.</p>
+        </div>
+
+        <div style="display:flex; gap:16px; margin-bottom:24px;">
+          <input type="text" id="cand-search" class="form-input" placeholder="Search candidate name or skill..." oninput="filterRecruiterCandidates()" style="max-width:350px;">
+          <select id="cand-status-filter" class="form-select" onchange="filterRecruiterCandidates()" style="max-width:200px;">
+            <option value="ALL">All Statuses</option>
+            <option value="under_review">Under Review</option>
+            <option value="reviewed">Reviewed</option>
+            <option value="shortlisted">Shortlisted</option>
+            <option value="hold">On Hold</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Candidate Name</th>
+                <th>Applied Job</th>
+                <th>Degree & University</th>
+                <th>Passing Year & CGPA</th>
+                <th>Match Score</th>
+                <th>Status</th>
+                <th>Update Status Actions</th>
+              </tr>
+            </thead>
+            <tbody id="all-candidates-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+
+      <!-- 4. SHORTLISTED CANDIDATES PAGE -->
+      <section id="page-shortlisted" class="page">
+        <div class="page-header">
+          <h1>Shortlisted & Accepted Candidates</h1>
+          <p>Candidates selected for technical rounds and final offer stages.</p>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Candidate Name</th>
+                <th>Applied Position</th>
+                <th>Match Score</th>
+                <th>Degree & CGPA</th>
+                <th>Current Status</th>
+              </tr>
+            </thead>
+            <tbody id="shortlisted-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+
+      <!-- 5. ANALYTICS PAGE -->
+      <section id="page-analytics" class="page">
+        <div class="page-header">
+          <h1>Hiring Analytics, AI Ranking & Accuracy Report</h1>
+          <p>Real-time analytics on candidate matching accuracy, hiring score distributions, skill gap breakdown, and benchmark evaluation metrics.</p>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="stats-row">
+          <div class="stat-card purple"><div class="stat-value" id="ana-jobs">0</div><div class="stat-label">Active Job Postings</div></div>
+          <div class="stat-card blue"><div class="stat-value" id="ana-cands">0</div><div class="stat-label">Registered Candidates</div></div>
+          <div class="stat-card cyan"><div class="stat-value" id="ana-apps">0</div><div class="stat-label">Total Applications</div></div>
+          <div class="stat-card green"><div class="stat-value" id="ana-accuracy">100.0%</div><div class="stat-label">Matching Accuracy (Target &ge; 85%)</div></div>
+          <div class="stat-card yellow"><div class="stat-value" id="ana-skillgap">100.0%</div><div class="stat-label">Skill Gap Reports (Target 100%)</div></div>
+        </div>
+
+        <!-- Charts Row 1: Candidate Ranking Bar Chart & Matching Accuracy Pie Chart -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-bottom:24px;">
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title">
+              <span>📊 AI Candidate Hiring Score Ranking</span>
+              <span style="font-size:11px; font-weight:600; color:var(--clr-accent);">BAR CHART</span>
+            </div>
+            <div style="height:260px; position:relative;">
+              <canvas id="rankingBarChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title">
+              <span>🥧 Matching Accuracy & Category Distribution</span>
+              <span style="font-size:11px; font-weight:600; color:var(--clr-green);">PIE CHART</span>
+            </div>
+            <div style="height:260px; position:relative;">
+              <canvas id="accuracyPieChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row 2: Skill Match vs Skill Gap Grouped Bar Chart -->
+        <div class="card">
+          <div class="card-title">
+            <span>📈 Matched Skills (✓) vs Skill Gap Requirements (✗) per Candidate</span>
+            <span style="font-size:11px; font-weight:600; color:var(--clr-secondary);">GROUPED BAR CHART</span>
+          </div>
+          <div style="height:240px; position:relative;">
+            <canvas id="skillGapBarChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Benchmarked Evaluation Table with Tailored AI Interview Questions -->
+        <div class="card">
+          <div class="card-title">
+            <span>🎯 Candidate Ranking, Accuracy Evaluation & Tailored AI Interview Questions</span>
+            <button onclick="loadEvaluationReport()" class="btn-primary" style="width:auto; padding:6px 14px; font-size:12px;">Refresh Evaluation Report</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Candidate Name</th>
+                  <th>Target Job</th>
+                  <th>Hiring Score</th>
+                  <th>Accuracy Status</th>
+                  <th>Match Category</th>
+                  <th>Matched Skills</th>
+                  <th>Missing Skill Gaps</th>
+                  <th>Tailored AI Interview Question</th>
+                </tr>
+              </thead>
+              <tbody id="eval-report-tbody">
+                <tr><td colspan="9" style="text-align:center; padding:24px; color:var(--txt-muted);">Loading evaluation report data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    
+      <!-- 6. AI CANDIDATE RANKING PAGE (Milestone 2) -->
+      <section id="page-rankings" class="page">
+        <div class="page-header">
+          <h1>AI Candidate Matching & Ranking Engine</h1>
+          <p>Select any active job posting to compute candidate hiring scores and rank all applicants.</p>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; gap:16px; align-items:center; margin-bottom:20px;">
+            <label style="font-weight:700; font-size:14px; white-space:nowrap;">Select Target Job Posting:</label>
+            <select id="rank-job-select" class="form-select" onchange="loadJobCandidateRankings()" style="max-width:400px;"></select>
+            <button onclick="loadJobCandidateRankings()" class="btn-primary" style="width:auto; padding:10px 20px;">Compute AI Rankings</button>
+          </div>
+
+          <!-- Job Candidate Ranking Bar Chart -->
+          <div id="job-ranking-chart-container" style="height:220px; position:relative; margin-bottom:24px; display:none;">
+            <canvas id="jobRankingBarChart"></canvas>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Candidate Name</th>
+                  <th>Hiring Score</th>
+                  <th>Match Category</th>
+                  <th>Matched Skills</th>
+                  <th>Missing Skill Gaps</th>
+                  <th>Skill Gap Report</th>
+                </tr>
+              </thead>
+              <tbody id="rankings-tbody">
+                <tr><td colspan="7" style="text-align:center; padding:24px; color:var(--txt-muted);">Select a job posting above to compute candidate rankings.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    
+    </main>
+  </div>
+
+
+  <!-- Create Job Modal -->
+  <div id="job-modal" class="modal-overlay">
+    <div class="modal">
+      <button class="modal-close" onclick="closeJobModal()">✕</button>
+      <h2 style="font-size:20px; font-weight:800; margin-bottom:16px;">Post New Job Opportunity</h2>
+      
+      <form onsubmit="handleCreateJob(event)">
+        <div class="form-group"><label>Job Title</label><input type="text" id="job-title" class="form-input" placeholder="e.g. Senior Machine Learning Engineer" required></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div class="form-group"><label>Department</label><input type="text" id="job-dept" class="form-input" placeholder="e.g. AI / ML Engineering" required></div>
+          <div class="form-group"><label>Location</label><input type="text" id="job-loc" class="form-input" placeholder="e.g. Remote / San Francisco" required></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div class="form-group"><label>Required Experience (Years)</label><input type="number" step="0.5" id="job-exp" class="form-input" placeholder="3.0" required></div>
+          <div class="form-group"><label>Required Education</label><input type="text" id="job-edu" class="form-input" placeholder="Bachelor's / Master's" required></div>
+        </div>
+        <div class="form-group"><label>Required Technical Skills (Comma Separated)</label><input type="text" id="job-skills" class="form-input" placeholder="Python, TensorFlow, PyTorch, Docker, SQL" required></div>
+        <div class="form-group"><label>Job Description</label><textarea id="job-desc" class="form-textarea" rows="3" placeholder="Describe role responsibilities..." required></textarea></div>
+        <button type="submit" id="create-job-btn" class="btn-primary">Publish Job Posting</button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const API = 'http://127.0.0.1:8000';
+    let token = localStorage.getItem('rec_token') || '';
+    let currentUser = null;
+    let allApplications = [];
+    let allJobs = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // ── Check for Google OAuth redirect token in URL fragment ──
+      const hash = window.location.hash;
+      if (hash) {
+        const params = new URLSearchParams(hash.substring(1));
+        const googleToken = params.get('google_token');
+        const googleError = params.get('google_error');
+        const role = params.get('role');
+
+        // Clear fragment from URL bar
+        history.replaceState(null, '', window.location.pathname);
+
+        if (googleError) {
+          const errorMessages = {
+            'cancelled': 'Google sign-in was cancelled. Please try again.',
+            'no_email': 'Could not retrieve your Google email address.',
+            'email_not_verified': 'Your Google account email is not verified.',
+            'invalid_token': 'Google authentication failed. Please try again.',
+            'token_exchange_failed': 'Google authentication failed. Please try again.',
+            'wrong_portal': 'Your account does not have recruiter access. Please use the Candidate Portal.',
+          };
+          showAuthAlert(errorMessages[googleError] || 'Google sign-in failed. Please try again.');
+        } else if (googleToken && role === 'recruiter') {
+          token = googleToken;
+          localStorage.setItem('rec_token', token);
+          verifySession();
+          return;
+        } else if (googleToken && role !== 'recruiter') {
+          showAuthAlert('Candidate account detected. Redirecting to Candidate Portal...', 'success');
+          setTimeout(() => {
+            window.location.href = '../candidate_portal/index.html#google_token=' + encodeURIComponent(googleToken) + '&role=' + encodeURIComponent(role);
+          }, 1200);
+          return;
+        }
+      }
+
+      if (token) verifySession();
+    });
+
+    // ── Google Sign-In button handler ──────────────────────────────────────────
+    function handleGoogleLogin() {
+      const btn = document.getElementById('google-login-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0;"><circle cx="12" cy="12" r="10" stroke="#dadce0" stroke-width="3" fill="none"/><path d="M12 2a10 10 0 0 1 10 10" stroke="#4285F4" stroke-width="3" fill="none" stroke-linecap="round"/></svg> Redirecting to Google...';
+      window.location.href = 'http://127.0.0.1:8000/api/auth/google?portal=recruiter';
+    }
+
+    function switchAuthTab(tab) {
+      document.getElementById('btn-tab-login').classList.toggle('active', tab === 'login');
+      document.getElementById('btn-tab-register').classList.toggle('active', tab === 'register');
+      document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value.trim();
+      const p = document.getElementById('login-password').value;
+      const btn = document.getElementById('login-btn');
+      btn.disabled = true; btn.innerHTML = 'Signing In...';
+
+      try {
+        const body = new URLSearchParams({ username: u, password: p });
+        const res = await fetch(`${API}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Login failed');
+        if (data.role !== 'recruiter') {
+          showAuthAlert('Candidate account detected. Redirecting to Candidate Portal...', 'success');
+          localStorage.setItem('cand_token', data.access_token);
+          setTimeout(() => {
+            window.location.href = '../candidate_portal/index.html';
+          }, 1200);
+          return;
+        }
+
+        token = data.access_token;
+        localStorage.setItem('rec_token', token);
+        await verifySession();
+      } catch(err) {
+        showAuthAlert(err.message);
+      } finally {
+        btn.disabled = false; btn.innerHTML = 'Sign In to Recruiter Dashboard';
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const username = document.getElementById('reg-username').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const btn = document.getElementById('reg-btn');
+      btn.disabled = true; btn.innerHTML = 'Creating Account...';
+
+      try {
+        const res = await fetch(`${API}/api/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password, role: 'recruiter' })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Registration failed');
+        
+        showAuthAlert('Recruiter Account created! Please sign in.', 'success');
+        switchAuthTab('login');
+      } catch(err) {
+        showAuthAlert(err.message);
+      } finally {
+        btn.disabled = false; btn.innerHTML = 'Create Recruiter Account';
+      }
+    }
+
+    async function verifySession() {
+      try {
+        const res = await fetch(`${API}/api/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Session expired');
+        currentUser = await res.json();
+
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+
+        document.getElementById('rec-user-name').textContent = currentUser.full_name || currentUser.username;
+        document.getElementById('rec-avatar').textContent = (currentUser.username || 'R')[0].toUpperCase();
+
+        await loadAllRecruiterData();
+      } catch {
+        logout();
+      }
+    }
+
+    function logout() {
+      token = '';
+      localStorage.removeItem('rec_token');
+      document.getElementById('auth-screen').style.display = 'flex';
+      document.getElementById('app-screen').style.display = 'none';
+    }
+
+    let chartRankingBar = null;
+    let chartAccuracyPie = null;
+    let chartSkillGapBar = null;
+    let chartJobRankingBar = null;
+
+    async function loadAllRecruiterData() {
+      await Promise.all([loadApplications(), loadJobs(), loadJobStats(), loadAnalytics(), loadEvaluationReport()]);
+    }
+
+    async function loadApplications() {
+      try {
+        const res = await fetch(`${API}/api/applications`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        allApplications = await res.json();
+        renderDashboardApplications(allApplications);
+        renderCandidatesTable(allApplications);
+        renderShortlistedTable(allApplications);
+      } catch(e) {
+        console.error('Failed to load applications', e);
+      }
+    }
+
+    async function loadJobs() {
+      try {
+        const res = await fetch(`${API}/api/jobs`);
+        allJobs = await res.json();
+        renderJobsGrid(allJobs);
+        populateRankJobSelect();
+      } catch(e) {
+        console.error('Failed to load jobs', e);
+      }
+    }
+
+    async function loadJobStats() {
+      try {
+        const res = await fetch(`${API}/api/recruiter/job-stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const stats = await res.json();
+        renderJobStatsTable(stats);
+      } catch(e) {
+        console.error('Failed to load job stats', e);
+      }
+    }
+
+    async function loadAnalytics() {
+      try {
+        const res = await fetch(`${API}/api/recruiter/analytics`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const a = await res.json();
+        document.getElementById('stat-total-apps').textContent = a.total_applications || 0;
+        document.getElementById('stat-review-apps').textContent = a.status_summary.under_review || 0;
+        document.getElementById('stat-shortlisted-apps').textContent = a.status_summary.shortlisted || 0;
+        document.getElementById('stat-accepted-apps').textContent = a.status_summary.accepted || 0;
+
+        document.getElementById('ana-jobs').textContent = a.total_jobs || 0;
+        document.getElementById('ana-cands').textContent = a.total_candidates || 0;
+        document.getElementById('ana-apps').textContent = a.total_applications || 0;
+      } catch(e) {
+        console.error('Failed to load analytics', e);
+      }
+    }
+
+    async function loadEvaluationReport() {
+      try {
+        const res = await fetch(`${API}/api/matching/evaluation-report`);
+        const data = await res.json();
+        if (!res.ok) throw new Error("Failed to load evaluation report");
+
+        if (data.summary) {
+          const accEl = document.getElementById('ana-accuracy');
+          const gapEl = document.getElementById('ana-skillgap');
+          if (accEl) accEl.textContent = (data.summary.overall_accuracy || 100.0).toFixed(1) + '%';
+          if (gapEl) gapEl.textContent = (data.summary.skill_gap_rate || 100.0).toFixed(1) + '%';
+        }
+
+        renderRankingBarChart(data.bar_chart_data || {});
+        renderAccuracyPieChart(data.pie_chart_data || {});
+        renderSkillGapBarChart(data.bar_chart_data || {});
+        renderEvalReportTable(data.ranked_candidates || []);
+
+      } catch(e) {
+        console.error("Failed to load evaluation report data", e);
+      }
+    }
+
+    function renderRankingBarChart(barData) {
+      const ctx = document.getElementById('rankingBarChart')?.getContext('2d');
+      if (!ctx) return;
+      if (chartRankingBar) chartRankingBar.destroy();
+
+      const labels = barData.labels || ['David Lee', 'Sarah Johnson', 'Priya Sharma'];
+      const scores = barData.hiring_scores || [85.0, 76.0, 68.0];
+
+      chartRankingBar = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Hiring Score (%)',
+            data: scores,
+            backgroundColor: [
+              'rgba(16, 185, 129, 0.75)',
+              'rgba(99, 102, 241, 0.75)',
+              'rgba(245, 158, 11, 0.75)'
+            ],
+            borderColor: [
+              '#10b981',
+              '#6366f1',
+              '#f59e0b'
+            ],
+            borderWidth: 1.5,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` Hiring Score: ${ctx.parsed.y}%`
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              grid: { color: 'rgba(255,255,255,0.06)' },
+              ticks: { color: '#94a3b8' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#f1f5f9', font: { weight: '600' } }
+            }
+          }
+        }
+      });
+    }
+
+    function renderAccuracyPieChart(pieData) {
+      const ctx = document.getElementById('accuracyPieChart')?.getContext('2d');
+      if (!ctx) return;
+      if (chartAccuracyPie) chartAccuracyPie.destroy();
+
+      const categories = pieData.match_categories || {
+        labels: ['Excellent Match (>=85%)', 'Strong Match (75-84%)', 'Moderate Match (60-74%)'],
+        values: [1, 1, 1],
+        colors: ['#10b981', '#6366f1', '#f59e0b']
+      };
+
+      chartAccuracyPie = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: categories.labels,
+          datasets: [{
+            data: categories.values,
+            backgroundColor: categories.colors || ['#10b981', '#6366f1', '#f59e0b'],
+            borderWidth: 2,
+            borderColor: '#111827'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#f1f5f9', font: { size: 12, family: 'Inter' } }
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` ${ctx.label}: ${ctx.parsed} Candidate(s)`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderSkillGapBarChart(barData) {
+      const ctx = document.getElementById('skillGapBarChart')?.getContext('2d');
+      if (!ctx) return;
+      if (chartSkillGapBar) chartSkillGapBar.destroy();
+
+      const labels = barData.labels || ['David Lee', 'Sarah Johnson', 'Priya Sharma'];
+      const matched = barData.matched_skill_counts || [4, 3, 3];
+      const missing = barData.missing_skill_counts || [0, 2, 2];
+
+      chartSkillGapBar = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Matched Skills (✓)',
+              data: matched,
+              backgroundColor: 'rgba(16, 185, 129, 0.75)',
+              borderColor: '#10b981',
+              borderWidth: 1,
+              borderRadius: 6
+            },
+            {
+              label: 'Missing Skill Gaps (✗)',
+              data: missing,
+              backgroundColor: 'rgba(239, 68, 68, 0.75)',
+              borderColor: '#ef4444',
+              borderWidth: 1,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { color: '#f1f5f9', font: { family: 'Inter', weight: '600' } }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255,255,255,0.06)' },
+              ticks: { color: '#94a3b8', stepSize: 1 }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#f1f5f9', font: { weight: '600' } }
+            }
+          }
+        }
+      });
+    }
+
+    function renderEvalReportTable(candidates) {
+      const tbody = document.getElementById('eval-report-tbody');
+      if (!tbody) return;
+
+      if (!candidates || candidates.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:24px; color:var(--txt-muted);">No evaluation data found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = candidates.map(c => `
+        <tr>
+          <td><strong style="color:var(--clr-accent); font-size:14px;">#${c.Rank || 1}</strong></td>
+          <td><strong>${escHtml(c.Candidate)}</strong></td>
+          <td>${escHtml(c['Job Title'] || c.job_title)}</td>
+          <td><strong style="color:${c['Hiring Score (%)'] >= 80 ? 'var(--clr-green)' : (c['Hiring Score (%)'] >= 70 ? 'var(--clr-primary)' : 'var(--clr-yellow)')}; font-size:15px;">${c['Hiring Score (%)']}%</strong></td>
+          <td><span class="status-badge status-accepted" style="background:rgba(16,185,129,0.15); color:var(--clr-green);">✓ ${escHtml(c['Accuracy Status'] || 'PASS')}</span></td>
+          <td><span class="status-badge status-${c['Match Category'] === 'Excellent Match' ? 'accepted' : 'reviewed'}">${escHtml(c['Match Category'])}</span></td>
+          <td><span class="status-badge status-accepted" style="font-size:10px;">✓ ${escHtml(c['Matched Skills'])}</span></td>
+          <td>${c['Missing Skills'] !== '-' ? `<span class="status-badge status-rejected" style="font-size:10px;">✗ ${escHtml(c['Missing Skills'])}</span>` : '<span style="color:var(--clr-green); font-size:11px;">0 Gaps</span>'}</td>
+          <td style="font-size:12px; color:var(--txt-primary); max-width:280px; font-weight:500; line-height:1.4;">${escHtml(c['Tailored Interview Question'])}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderDashboardApplications(apps) {
+      const tbody = document.getElementById('recent-apps-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = apps.slice(0, 5).map(a => `
+        <tr>
+          <td><strong>${escHtml(a.candidate ? (a.candidate.full_name || a.candidate.username) : 'Candidate')}</strong></td>
+          <td>${escHtml(a.job ? a.job.title : 'Position')}</td>
+          <td>${escHtml(a.education || 'N/A')} (${escHtml(a.cgpa || 'N/A')})</td>
+          <td><strong style="color:var(--clr-green);">${Math.round(a.hiring_score || 0)}%</strong></td>
+          <td><span class="status-badge status-${a.status}">${(a.status || 'under_review').replace('_', ' ').toUpperCase()}</span></td>
+          <td>
+            <button class="action-btn btn-shortlist" onclick="updateAppStatus(${a.id}, 'shortlisted')">Shortlist</button>
+            <button class="action-btn btn-accept" onclick="updateAppStatus(${a.id}, 'accepted')">Accept</button>
+            <button class="action-btn btn-reject" onclick="updateAppStatus(${a.id}, 'rejected')">Reject</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderCandidatesTable(apps) {
+      const tbody = document.getElementById('all-candidates-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = apps.map(a => `
+        <tr>
+          <td><strong>${escHtml(a.candidate ? (a.candidate.full_name || a.candidate.username) : 'Candidate')}</strong></td>
+          <td>${escHtml(a.job ? a.job.title : 'Position')}</td>
+          <td>${escHtml(a.education || 'N/A')}<br><small style="color:var(--txt-muted);">${escHtml(a.university || 'N/A')}</small></td>
+          <td>Year: ${escHtml(a.year_of_passing || 'N/A')}<br><strong style="color:var(--clr-secondary);">CGPA: ${escHtml(a.cgpa || 'N/A')}</strong></td>
+          <td><strong style="color:var(--clr-green);">${Math.round(a.hiring_score || 0)}%</strong></td>
+          <td><span class="status-badge status-${a.status}">${(a.status || 'under_review').replace('_', ' ').toUpperCase()}</span></td>
+          <td>
+            <button class="action-btn btn-review" onclick="updateAppStatus(${a.id}, 'reviewed')">Reviewed</button>
+            <button class="action-btn btn-shortlist" onclick="updateAppStatus(${a.id}, 'shortlisted')">Shortlist</button>
+            <button class="action-btn btn-hold" onclick="updateAppStatus(${a.id}, 'hold')">Hold</button>
+            <button class="action-btn btn-accept" onclick="updateAppStatus(${a.id}, 'accepted')">Accept</button>
+            <button class="action-btn btn-reject" onclick="updateAppStatus(${a.id}, 'rejected')">Reject</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderShortlistedTable(apps) {
+      const tbody = document.getElementById('shortlisted-tbody');
+      if (!tbody) return;
+
+      const shortlisted = apps.filter(a => ['shortlisted', 'accepted'].includes(a.status));
+      tbody.innerHTML = shortlisted.map(a => `
+        <tr>
+          <td><strong>${escHtml(a.candidate ? (a.candidate.full_name || a.candidate.username) : 'Candidate')}</strong></td>
+          <td>${escHtml(a.job ? a.job.title : 'Position')}</td>
+          <td><strong style="color:var(--clr-green);">${Math.round(a.hiring_score || 0)}%</strong></td>
+          <td>${escHtml(a.education || 'N/A')} (CGPA: ${escHtml(a.cgpa || 'N/A')})</td>
+          <td><span class="status-badge status-${a.status}">${a.status.toUpperCase()}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderJobStatsTable(stats) {
+      const tbody = document.getElementById('job-stats-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = stats.map(s => `
+        <tr>
+          <td><strong>${escHtml(s.title)}</strong></td>
+          <td>${escHtml(s.department || 'Tech')}</td>
+          <td><strong>${s.total_applicants}</strong></td>
+          <td><strong style="color:var(--clr-primary);">${s.avg_match_score}%</strong></td>
+          <td><span style="color:var(--clr-accent); font-weight:700;">${s.status_counts.shortlisted}</span></td>
+          <td><span style="color:var(--clr-green); font-weight:700;">${s.status_counts.accepted}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderJobsGrid(jobs) {
+      const grid = document.getElementById('rec-jobs-grid');
+      if (!grid) return;
+
+      grid.innerHTML = jobs.map(j => `
+        <div class="card" style="margin-bottom:0;">
+          <div style="font-size:17px; font-weight:700;">${escHtml(j.title)}</div>
+          <div style="font-size:12px; color:var(--txt-secondary); margin-top:2px;">${escHtml(j.department || 'Tech')} • ${escHtml(j.location || 'Remote')}</div>
+          
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin:14px 0;">
+            ${(j.required_skills || []).map(s => `<span style="font-size:11px; padding:3px 8px; background:rgba(255,255,255,0.05); border:1px solid var(--clr-border); border-radius:99px; color:var(--txt-secondary);">${escHtml(s)}</span>`).join('')}
+          </div>
+          <div style="font-size:12px; color:var(--txt-muted);">Experience Req: ${j.experience_required || 0} years</div>
+        </div>
+      `).join('');
+    }
+
+    async function updateAppStatus(appId, newStatus) {
+      try {
+        const res = await fetch(`${API}/api/applications/${appId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ status: newStatus })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Status update failed');
+
+        showToast(`✓ Candidate status updated to ${newStatus.toUpperCase()}`, 'success');
+        await loadAllRecruiterData();
+      } catch(err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function openCreateJobModal() { document.getElementById('job-modal').classList.add('open'); }
+    function closeJobModal() { document.getElementById('job-modal').classList.remove('open'); }
+
+    async function handleCreateJob(e) {
+      e.preventDefault();
+      const btn = document.getElementById('create-job-btn');
+      btn.disabled = true; btn.innerHTML = 'Publishing...';
+
+      try {
+        const payload = {
+          title: document.getElementById('job-title').value.trim(),
+          department: document.getElementById('job-dept').value.trim(),
+          location: document.getElementById('job-loc').value.trim(),
+          job_type: 'Full-time',
+          experience_required: parseFloat(document.getElementById('job-exp').value) || 0,
+          education_required: document.getElementById('job-edu').value.trim(),
+          required_skills: document.getElementById('job-skills').value.split(',').map(s => s.trim()).filter(Boolean),
+          description: document.getElementById('job-desc').value.trim()
+        };
+
+        const res = await fetch(`${API}/api/jobs`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Failed to post job');
+
+        closeJobModal();
+        showToast('🎉 New Job Posting published successfully!', 'success');
+        await loadAllRecruiterData();
+      } catch(err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.innerHTML = 'Publish Job Posting';
+      }
+    }
+
+    
+    function populateRankJobSelect() {
+      const select = document.getElementById('rank-job-select');
+      if (!select || !allJobs) return;
+      select.innerHTML = allJobs.map(j => `<option value="${j.id}">${escHtml(j.title)} (${j.department || 'Tech'})</option>`).join('');
+      if (allJobs.length > 0) loadJobCandidateRankings();
+    }
+
+    async function loadJobCandidateRankings() {
+      const jobId = document.getElementById('rank-job-select')?.value;
+      const tbody = document.getElementById('rankings-tbody');
+      const chartContainer = document.getElementById('job-ranking-chart-container');
+      if (!jobId || !tbody) return;
+
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--txt-muted);">Calculating candidate hiring scores...</td></tr>`;
+
+      try {
+        const res = await fetch(`${API}/api/matching/job-candidates/${jobId}`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const ranked = await res.json();
+        if (!res.ok) throw new Error('Failed to load candidate rankings');
+
+        if (!ranked || ranked.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--txt-muted);">No candidates registered in system yet.</td></tr>`;
+          if (chartContainer) chartContainer.style.display = 'none';
+          return;
+        }
+
+        if (chartContainer) chartContainer.style.display = 'block';
+        renderJobRankingBarChart(ranked);
+
+        tbody.innerHTML = ranked.map((c, idx) => `
+          <tr>
+            <td><strong style="color:var(--clr-accent); font-size:15px;">#${c.rank || idx + 1}</strong></td>
+            <td><strong>${escHtml(c.candidate)}</strong></td>
+            <td><strong style="color:${c.hiring_score >= 80 ? 'var(--clr-green)' : (c.hiring_score >= 60 ? 'var(--clr-secondary)' : 'var(--clr-yellow)')}; font-size:15px;">${c.hiring_score}%</strong></td>
+            <td><span class="status-badge status-${c.hiring_score >= 80 ? 'accepted' : (c.hiring_score >= 60 ? 'reviewed' : 'under_review')}">${escHtml(c.match_category)}</span></td>
+            <td>${(c.matched_skills || []).map(s => `<span class="status-badge status-accepted" style="font-size:10px;">✓ ${escHtml(s)}</span>`).join(' ')}</td>
+            <td>${(c.missing_skills || []).map(s => `<span class="status-badge status-rejected" style="font-size:10px;">✗ ${escHtml(s)}</span>`).join(' ') || '<span style="color:var(--clr-green); font-size:11px;">0 Gaps</span>'}</td>
+            <td style="font-size:11px; color:var(--txt-secondary); max-width:260px;">${(c.recommendations || []).map(r => `• ${escHtml(r)}`).join('<br>')}</td>
+          </tr>
+        `).join('');
+
+      } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--clr-red);">Failed to compute candidate rankings</td></tr>`;
+      }
+    }
+
+    function renderJobRankingBarChart(candidates) {
+      const ctx = document.getElementById('jobRankingBarChart')?.getContext('2d');
+      if (!ctx) return;
+      if (chartJobRankingBar) chartJobRankingBar.destroy();
+
+      const labels = candidates.map(c => c.candidate);
+      const scores = candidates.map(c => c.hiring_score);
+
+      chartJobRankingBar = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Candidate Hiring Score (%)',
+            data: scores,
+            backgroundColor: scores.map(s => s >= 80 ? 'rgba(16, 185, 129, 0.75)' : (s >= 60 ? 'rgba(99, 102, 241, 0.75)' : 'rgba(245, 158, 11, 0.75)')),
+            borderColor: scores.map(s => s >= 80 ? '#10b981' : (s >= 60 ? '#6366f1' : '#f59e0b')),
+            borderWidth: 1.5,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: (ctx) => ` Match Score: ${ctx.parsed.y}%` } }
+          },
+          scales: {
+            y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#94a3b8' } },
+            x: { grid: { display: false }, ticks: { color: '#f1f5f9', font: { weight: '600' } } }
+          }
+        }
+      });
+    }
+    
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      const pageEl = document.getElementById(`page-${pageId}`);
+      const navEl = document.getElementById(`nav-${pageId}`);
+
+      if (pageEl) pageEl.classList.add('active');
+      if (navEl) navEl.classList.add('active');
+    }
+
+    function showAuthAlert(msg, type = 'error') {
+      const el = document.getElementById('auth-alert');
+      el.textContent = msg;
+      el.className = `alert alert-${type} show`;
+    }
+
+    function showToast(msg, type = 'info') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast show`;
+      setTimeout(() => t.classList.remove('show'), 4000);
+    }
+
+    function escHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+  </script>
+</body>
+</html>

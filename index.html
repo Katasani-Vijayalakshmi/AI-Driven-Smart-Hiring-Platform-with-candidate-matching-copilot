@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Recruitment Copilot — An AI-powered smart hiring platform with candidate matching, resume parsing, and skill-gap analysis.">
+  <title>AI Recruitment Copilot — Smart Hiring Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --clr-bg: #0a0b14;
+      --clr-surface: #111827;
+      --clr-border: rgba(255,255,255,0.07);
+      --clr-primary: #6366f1;
+      --clr-accent: #a855f7;
+      --clr-secondary: #06b6d4;
+      --clr-green: #10b981;
+      --txt-primary: #f1f5f9;
+      --txt-secondary: #94a3b8;
+      --txt-muted: #64748b;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Inter',sans-serif;
+      background: var(--clr-bg);
+      color: var(--txt-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    /* Background glow */
+    .bg-glow {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse at 15% 40%, rgba(99,102,241,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 20%, rgba(168,85,247,0.14) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 90%, rgba(6,182,212,0.1) 0%, transparent 55%);
+    }
+    .container { position: relative; z-index:1; max-width:1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── Navbar ── */
+    nav {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--clr-border);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { display: flex; align-items: center; gap: 12px; }
+    .nav-logo .logo-icon { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent)); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; color: white; box-shadow: 0 0 20px rgba(99,102,241,0.4); }
+    .nav-logo .logo-name { font-size: 17px; font-weight: 800; }
+    .nav-badge { font-size: 10px; font-weight: 600; background: rgba(99,102,241,0.15); color: var(--clr-primary); padding: 3px 10px; border-radius: 99px; border: 1px solid rgba(99,102,241,0.3); }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-btn { padding: 9px 18px; border-radius: 8px; font-family: 'Inter',sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+    .nav-btn.outline { background: transparent; border: 1px solid var(--clr-border); color: var(--txt-secondary); }
+    .nav-btn.outline:hover { border-color: var(--clr-primary); color: var(--clr-primary); }
+    .nav-btn.filled { background: linear-gradient(135deg,var(--clr-primary),var(--clr-accent)); border: none; color: white; }
+    .nav-btn.filled:hover { opacity: 0.85; }
+
+    /* ── Hero ── */
+    .hero { text-align: center; padding: 80px 0 60px; }
+    .hero-chip { display: inline-flex; align-items: center; gap: 8px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: var(--clr-green); padding: 6px 16px; border-radius: 99px; font-size: 12px; font-weight: 700; margin-bottom: 28px; animation: fadeInUp 0.6s ease both; }
+    .hero-chip .dot { width: 6px; height: 6px; background: var(--clr-green); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(1.4);} }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+    .hero h1 {
+      font-size: clamp(42px, 6vw, 72px);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s 0.1s ease both;
+    }
+    .hero h1 .gradient { background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent), var(--clr-secondary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { font-size: 18px; color: var(--txt-secondary); max-width: 640px; margin: 0 auto 48px; line-height: 1.7; animation: fadeInUp 0.6s 0.2s ease both; }
+
+    /* ── Portal Cards ── */
+    .portals { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 80px; animation: fadeInUp 0.6s 0.3s ease both; }
+    .portal-card {
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: 24px;
+      padding: 40px 36px;
+      text-align: center;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      display: block;
+    }
+    .portal-card:hover { transform: translateY(-6px); box-shadow: 0 16px 48px rgba(0,0,0,0.4); }
+    .portal-card.candidate:hover { border-color: var(--clr-primary); box-shadow: 0 16px 48px rgba(99,102,241,0.2); }
+    .portal-card.recruiter:hover { border-color: var(--clr-accent); box-shadow: 0 16px 48px rgba(168,85,247,0.2); }
+    .portal-card::before { content:''; position:absolute; top:-1px; left:-1px; right:-1px; height:3px; }
+    .portal-card.candidate::before { background: linear-gradient(90deg,var(--clr-primary),var(--clr-secondary)); }
+    .portal-card.recruiter::before { background: linear-gradient(90deg,var(--clr-accent),var(--clr-primary)); }
+    .portal-icon { font-size: 56px; margin-bottom: 20px; display: block; }
+    .portal-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; color: var(--txt-primary); }
+    .portal-desc { font-size: 14px; color: var(--txt-secondary); line-height: 1.6; margin-bottom: 24px; }
+    .portal-features { list-style: none; text-align: left; margin-bottom: 28px; }
+    .portal-features li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--txt-secondary); padding: 6px 0; }
+    .portal-features li::before { content: '✓'; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+    .portal-card.candidate .portal-features li::before { color: var(--clr-primary); }
+    .portal-card.recruiter .portal-features li::before { color: var(--clr-accent); }
+    .portal-btn { display: inline-block; width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; color: white; text-decoration: none; transition: opacity 0.2s; }
+    .portal-card.candidate .portal-btn { background: linear-gradient(135deg,var(--clr-primary),var(--clr-secondary)); }
+    .portal-card.recruiter .portal-btn { background: linear-gradient(135deg,var(--clr-accent),var(--clr-primary)); }
+    .portal-btn:hover { opacity: 0.85; }
+
+    /* ── Features ── */
+    .features-section { margin-bottom: 80px; }
+    .section-title { font-size: 32px; font-weight: 800; text-align: center; margin-bottom: 8px; }
+    .section-sub { text-align: center; color: var(--txt-secondary); font-size: 15px; margin-bottom: 48px; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .feature-card { background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: 16px; padding: 24px; transition: border-color 0.2s, transform 0.2s; }
+    .feature-card:hover { border-color: rgba(99,102,241,0.3); transform: translateY(-2px); }
+    .feature-icon { font-size: 32px; margin-bottom: 14px; }
+    .feature-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .feature-desc { font-size: 13px; color: var(--txt-secondary); line-height: 1.6; }
+
+    /* ── Tech Stack ── */
+    .tech-section { margin-bottom: 80px; text-align: center; }
+    .tech-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 32px; }
+    .tech-badge { background: rgba(255,255,255,0.04); border: 1px solid var(--clr-border); border-radius: 10px; padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--txt-secondary); transition: border-color 0.2s, color 0.2s; }
+    .tech-badge:hover { border-color: var(--clr-primary); color: var(--txt-primary); }
+
+    /* ── Footer ── */
+    footer { border-top: 1px solid var(--clr-border); padding: 40px 0; text-align: center; color: var(--txt-muted); font-size: 13px; }
+
+    @media (max-width: 768px) {
+      .portals { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="bg-glow"></div>
+
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <div class="logo-icon">🤖</div>
+        <div>
+          <div class="logo-name">AI Recruitment Copilot</div>
+        </div>
+        <span class="nav-badge">v2.0</span>
+      </div>
+      <div class="nav-links">
+        <a href="candidate_portal/index.html" class="nav-btn outline">Candidate Login</a>
+        <a href="recruiter_portal/index.html" class="nav-btn filled">Recruiter Login</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-chip"><div class="dot"></div> AI-Powered Hiring Platform · Now Live</div>
+    <h1>
+      The Smartest Way to<br>
+      <span class="gradient">Hire & Get Hired</span>
+    </h1>
+    <p>An AI-driven recruitment platform that automates resume parsing, candidate matching, skill-gap analysis, and provides intelligent hiring insights — all in real time.</p>
+  </section>
+
+  <!-- Portal Selection -->
+  <div class="portals">
+    <a href="candidate_portal/index.html" class="portal-card candidate">
+      <span class="portal-icon">👤</span>
+      <div class="portal-title">Candidate Portal</div>
+      <div class="portal-desc">For job seekers who want to find the right opportunity, apply with their resume, and track application progress.</div>
+      <ul class="portal-features">
+        <li>Browse all open job positions</li>
+        <li>Upload PDF/DOCX resume and auto-parse</li>
+        <li>AI-powered job matching score</li>
+        <li>Track real-time application status</li>
+        <li>View your parsed education & skills profile</li>
+      </ul>
+      <span class="portal-btn">Enter Candidate Portal →</span>
+    </a>
+    <a href="recruiter_portal/index.html" class="portal-card recruiter">
+      <span class="portal-icon">🔬</span>
+      <div class="portal-title">Recruiter Portal</div>
+      <div class="portal-desc">For HR teams who need to review applicants, manage job postings, and make data-driven hiring decisions.</div>
+      <ul class="portal-features">
+        <li>Post and manage job openings</li>
+        <li>Review all candidate profiles & scores</li>
+        <li>Skill distribution & analytics charts</li>
+        <li>Accept / reject / shortlist candidates</li>
+        <li>Top 20 skills bar chart & pipeline insights</li>
+      </ul>
+      <span class="portal-btn">Enter Recruiter Portal →</span>
+    </a>
+  </div>
+
+  <!-- Features -->
+  <section class="features-section">
+    <div class="section-title">Powered by AI Technology</div>
+    <div class="section-sub">Everything you need for a modern, intelligent hiring pipeline</div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <div class="feature-title">Resume Parsing</div>
+        <div class="feature-desc">PDF & DOCX parsing using PyMuPDF and python-docx. Extracts education, skills, experience, and projects automatically.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <div class="feature-title">NLP Extraction</div>
+        <div class="feature-desc">spaCy and HuggingFace Transformers for intelligent entity recognition. Named Entity Recognition (NER) for structured candidate profiling.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">AI Matching Score</div>
+        <div class="feature-desc">Cosine similarity and TF-IDF matching engine calculates a hiring score for each candidate-job pair in real time.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Analytics Dashboard</div>
+        <div class="feature-desc">Skill distribution pie charts, top 20 skills bar chart, score distributions, and pipeline status analytics for recruiters.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <div class="feature-title">Secure Authentication</div>
+        <div class="feature-desc">JWT-based auth with bcrypt password hashing. Role-based access control separates candidate and recruiter portals completely.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗄️</div>
+        <div class="feature-title">MySQL Persistence</div>
+        <div class="feature-desc">All data stored in MySQL via SQLAlchemy ORM. Structured tables for users, jobs, and applications with full relational integrity.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="tech-section">
+    <div class="section-title">Tech Stack</div>
+    <div class="section-sub">Built with industry-standard tools and frameworks</div>
+    <div class="tech-row">
+      <span class="tech-badge">🐍 Python 3.11</span>
+      <span class="tech-badge">⚡ FastAPI</span>
+      <span class="tech-badge">🦄 Uvicorn</span>
+      <span class="tech-badge">🗄️ MySQL (local)</span>
+      <span class="tech-badge">🔗 SQLAlchemy</span>
+      <span class="tech-badge">🔐 JWT Auth</span>
+      <span class="tech-badge">🔒 bcrypt</span>
+      <span class="tech-badge">📄 PyMuPDF</span>
+      <span class="tech-badge">📝 python-docx</span>
+      <span class="tech-badge">🧠 spaCy</span>
+      <span class="tech-badge">🤗 HuggingFace</span>
+      <span class="tech-badge">🐼 pandas</span>
+      <span class="tech-badge">📊 Chart.js</span>
+      <span class="tech-badge">🎨 Vanilla CSS</span>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="container">
+    <p>AI Recruitment Copilot © 2026 — Built for intelligent hiring decisions</p>
+    <p style="margin-top:8px;">Backend API running at <code style="color:var(--clr-primary);">http://localhost:8000</code></p>
+  </div>
+</footer>
+</body>
+</html>
