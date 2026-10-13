@@ -1,0 +1,38 @@
+# ==============================================================
+#  AI Recruitment Copilot — Python Backend Dependencies
+#  Part 1: Resume Parsing & Profiling
+#  Part 2: Matching Engine & Skill Gap Analysis
+#  Part 3: Interview Assistance, ATS, Deployment
+# ==============================================================
+
+# ── Part 1 ─────────────────────────────────────────────────────
+pymupdf>=1.23.0          # PDF text extraction (fitz)
+python-docx>=1.1.0       # DOCX parsing
+spacy>=3.7.0             # NLP entity recognition
+pandas>=2.1.0            # Structured data / DataFrames
+transformers>=4.40.0     # HuggingFace NLP models
+torch>=2.2.0             # PyTorch backend for transformers
+
+# ── Part 2 ─────────────────────────────────────────────────────
+scikit-learn>=1.4.0      # Cosine similarity, ML utilities
+sentence-transformers>=2.7.0  # Semantic skill embeddings (SBERT)
+numpy>=1.26.0            # Numerical operations
+
+# ── Part 3 ─────────────────────────────────────────────────────
+openai>=1.30.0           # GPT-4o interview question generation
+fastapi>=0.111.0         # REST API framework
+uvicorn[standard]>=0.29.0  # ASGI server
+SpeechRecognition>=3.10.0  # Voice screening transcription
+plotly>=5.22.0           # Analytics charts
+reportlab>=4.2.0         # PDF recruitment report export
+python-multipart>=0.0.9  # File upload handling for FastAPI
+httpx>=0.27.0            # Async HTTP client for ATS APIs
+
+# ── Google OAuth / Auth ─────────────────────────────────────────
+authlib>=1.3.0           # Google OAuth 2.0 client (official)
+python-dotenv>=1.0.0     # Load .env environment variables
+itsdangerous>=2.1.0      # HMAC-signed OAuth state parameter (CSRF protection)
+
+# ── Dev / Testing ───────────────────────────────────────────────
+pytest>=8.1.0
+pytest-asyncio>=0.23.0

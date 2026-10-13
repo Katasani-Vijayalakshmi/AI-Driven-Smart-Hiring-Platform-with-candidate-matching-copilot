@@ -48,3 +48,4 @@ dist/
 # OS files
 .DS_Store
 Thumbs.db
+migrate_google_auth.py

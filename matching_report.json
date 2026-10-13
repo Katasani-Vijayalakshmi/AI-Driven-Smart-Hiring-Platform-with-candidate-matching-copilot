@@ -1,0 +1,118 @@
+{
+  "summary": {
+    "total_evaluations": 3,
+    "overall_accuracy": 100.0,
+    "skill_gap_rate": 100.0,
+    "target_met": true
+  },
+  "bar_chart_data": {
+    "labels": [
+      "David Lee",
+      "Sarah Johnson",
+      "Priya Sharma"
+    ],
+    "hiring_scores": [
+      85.0,
+      76.0,
+      68.0
+    ],
+    "matched_skill_counts": [
+      4,
+      3,
+      3
+    ],
+    "missing_skill_counts": [
+      0,
+      2,
+      2
+    ],
+    "job_titles": [
+      "Backend Developer",
+      "Senior Machine Learning Eng.",
+      "Senior Machine Learning Eng."
+    ]
+  },
+  "pie_chart_data": {
+    "accuracy_pass_rate": {
+      "labels": [
+        "PASS (Exact Benchmark)",
+        "FAIL (Mismatch)"
+      ],
+      "values": [
+        3,
+        0
+      ],
+      "percentages": [
+        100.0,
+        0.0
+      ]
+    },
+    "match_categories": {
+      "labels": [
+        "Excellent Match (>=85%)",
+        "Strong Match (75-84%)",
+        "Moderate Match (60-74%)"
+      ],
+      "values": [
+        1,
+        1,
+        1
+      ],
+      "colors": [
+        "#10b981",
+        "#6366f1",
+        "#f59e0b"
+      ]
+    }
+  },
+  "ranked_candidates": [
+    {
+      "Candidate": "David Lee",
+      "Job Title": "Backend Developer",
+      "Hiring Score (%)": 85.0,
+      "Matched Skills Count": 4,
+      "Missing Skills Count": 0,
+      "Matched Skills": "Java, Spring, SQL, AWS",
+      "Missing Skills": "-",
+      "Accuracy Status": "PASS (Exact)",
+      "Match Category": "Excellent Match",
+      "Tailored Interview Question": "[Technical (Spring & AWS Scaling)] How do you design a high-concurrency Spring Boot microservice connected to AWS RDS PostgreSQL with connection pooling and caching?",
+      "Question Category": "Technical (Spring & AWS Scaling)",
+      "Question Text": "How do you design a high-concurrency Spring Boot microservice connected to AWS RDS PostgreSQL with connection pooling and caching?",
+      "Expected Key Points": "HikariCP pooling, Redis distributed caching, Stateless JWT, AWS ECS autoscaling",
+      "Rank": 1
+    },
+    {
+      "Candidate": "Sarah Johnson",
+      "Job Title": "Senior Machine Learning Eng.",
+      "Hiring Score (%)": 76.0,
+      "Matched Skills Count": 3,
+      "Missing Skills Count": 2,
+      "Matched Skills": "Python, SQL, TensorFlow",
+      "Missing Skills": "AWS SageMaker, Kubernetes",
+      "Accuracy Status": "PASS (Exact)",
+      "Match Category": "Strong Match",
+      "Tailored Interview Question": "[Technical (ML Optimization)] How did you optimize your TensorFlow model inference latency and memory footprint when deploying to Kubernetes or cloud pipelines?",
+      "Question Category": "Technical (ML Optimization)",
+      "Question Text": "How did you optimize your TensorFlow model inference latency and memory footprint when deploying to Kubernetes or cloud pipelines?",
+      "Expected Key Points": "Model quantization (INT8/FP16), TensorRT, ONNX Runtime, Batch size tuning",
+      "Rank": 2
+    },
+    {
+      "Candidate": "Priya Sharma",
+      "Job Title": "Senior Machine Learning Eng.",
+      "Hiring Score (%)": 68.0,
+      "Matched Skills Count": 3,
+      "Missing Skills Count": 2,
+      "Matched Skills": "Python, SQL, Kubernetes",
+      "Missing Skills": "TensorFlow, AWS SageMaker",
+      "Accuracy Status": "PASS (Exact)",
+      "Match Category": "Moderate Match",
+      "Tailored Interview Question": "[Scenario (Skill Gap: AWS SageMaker)] You have solid Kubernetes experience, but this role requires AWS SageMaker. How would you architect a model training pipeline moving from raw K8s to SageMaker?",
+      "Question Category": "Scenario (Skill Gap: AWS SageMaker)",
+      "Question Text": "You have solid Kubernetes experience, but this role requires AWS SageMaker. How would you architect a model training pipeline moving from raw K8s to SageMaker?",
+      "Expected Key Points": "SageMaker Estimator SDK, Spot training instances, S3 artifact storage, SageMaker Endpoints",
+      "Rank": 3
+    }
+  ]
+}
